@@ -1,5 +1,6 @@
 # Project Specific Files
 FileCollection/
+output/
 
 # Build results
 [Dd]ebug/
