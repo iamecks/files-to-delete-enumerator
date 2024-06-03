@@ -1,13 +1,4 @@
-﻿string resultsfile = $"{DateTime.Now:yyyyMMddHHmmss} results.txt";
-string folder = "";
-
-// Create a new file to hold the results
-using (StreamWriter sw = File.CreateText(resultsfile))
-{
-    sw.WriteLine("FullName,Name,Length,LastWriteTime");
-}
-
-Console.WriteLine("Enter File/s Directory:");
+﻿Console.WriteLine("Enter File/s Directory:");
 string? inputDirectotyPath = Console.ReadLine();
 
 if (string.IsNullOrEmpty(inputDirectotyPath))
@@ -16,20 +7,39 @@ if (string.IsNullOrEmpty(inputDirectotyPath))
     return;
 }
 
-if (Directory.Exists(inputDirectotyPath))
+if (!Directory.Exists(inputDirectotyPath))
 {
-    folder = inputDirectotyPath;
-    Console.WriteLine("Path: {0}", inputDirectotyPath);
+    Console.WriteLine("Invalid Directory Path");
+    return;
 }
 
-// create a DirectoryInfo for the given folder
-DirectoryInfo di = new(folder);
+// Create results file placeholder
+string resultsfile = Path.Combine("output", $"{DateTime.Now:yyyyMMddHHmmss} Log.txt");
+CreateResultsFile(resultsfile);
 
-foreach (FileInfo fi in di.EnumerateFiles())
-{
-    // append to csv file, file name, size, and last modified date
-    using StreamWriter sw = File.AppendText(resultsfile);
-    sw.WriteLine($"{fi.FullName},{fi.Name},{Math.Floor(fi.Length / 1024.0 / 1024.0)} MB,{fi.LastWriteTime}");
-}
-
+// Get all files in the directory and log them
+LogFilesInDirectory(inputDirectotyPath, resultsfile);
 Console.WriteLine("Log file complete.");
+
+
+static void CreateResultsFile(string resultsfile)
+{
+    string? directoryPath = Path.GetDirectoryName(resultsfile);
+    if (directoryPath != null && !Directory.Exists(directoryPath))
+    {
+        Directory.CreateDirectory(directoryPath);
+    }
+
+    using StreamWriter sw = File.CreateText(resultsfile);
+    sw.WriteLine("FullName,Name,Size,LastWriteTime");
+}
+
+static void LogFilesInDirectory(string directoryPath, string resultsfile)
+{
+    DirectoryInfo di = new(directoryPath);
+    using StreamWriter sw = File.AppendText(resultsfile);
+    foreach (FileInfo fi in di.EnumerateFiles())
+    {
+        sw.WriteLine($"{fi.FullName},{fi.Name},{Math.Floor(fi.Length / 1024.0 / 1024.0)} MB,{fi.LastWriteTime}");
+    }
+}
